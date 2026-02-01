@@ -24,7 +24,7 @@ function findNearestColor(targetHex: string, palette: Palette): string {
 
   for (const paletteHex of palette.colors) {
     const paletteColor = colorsea(paletteHex)
-    const distance = target.deltaE(paletteColor, 'ciede2000')
+    const distance = target.deltaE(paletteColor, 'cie2000')
 
     if (distance < minDistance) {
       minDistance = distance
