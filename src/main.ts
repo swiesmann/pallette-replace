@@ -1,14 +1,20 @@
 import colorsea from 'colorsea'
 import { palettes, type Palette } from './palettes'
 
-const HEX_COLOR_REGEX = /#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/g
+// Matches #RGB, #RGBA, #RRGGBB, #RRGGBBAA - captures color and alpha separately
+const HEX_COLOR_REGEX = /#([0-9a-fA-F]{6})([0-9a-fA-F]{2})?\b|#([0-9a-fA-F]{3})([0-9a-fA-F])?\b/g
 
 function normalizeHex(hex: string): string {
   hex = hex.replace('#', '')
+  // Handle 3-digit hex (RGB)
   if (hex.length === 3) {
     hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2]
   }
-  return '#' + hex.toLowerCase()
+  // Handle 4-digit hex (RGBA) - extract just the color part
+  if (hex.length === 4) {
+    hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2]
+  }
+  return '#' + hex.slice(0, 6).toLowerCase()
 }
 
 function findNearestColor(targetHex: string, palette: Palette): string {
@@ -31,7 +37,25 @@ function findNearestColor(targetHex: string, palette: Palette): string {
 
 function replaceColors(content: string, palette: Palette): string {
   return content.replace(HEX_COLOR_REGEX, (match) => {
-    return findNearestColor(match, palette)
+    const hex = match.replace('#', '')
+    let colorPart: string
+    let alphaPart = ''
+
+    if (hex.length === 8) {
+      // #RRGGBBAA
+      colorPart = '#' + hex.slice(0, 6)
+      alphaPart = hex.slice(6, 8)
+    } else if (hex.length === 4) {
+      // #RGBA
+      colorPart = '#' + hex.slice(0, 3)
+      alphaPart = hex[3] + hex[3] // Expand single alpha digit to two
+    } else {
+      // #RGB or #RRGGBB (no alpha)
+      colorPart = match
+    }
+
+    const newColor = findNearestColor(colorPart, palette)
+    return newColor + alphaPart
   })
 }
 
