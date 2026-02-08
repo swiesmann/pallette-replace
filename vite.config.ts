@@ -3,6 +3,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
   root: 'src',
+  base: "/palette-replace/",
   build: {
     outDir: '../dist',
     emptyOutDir: true
